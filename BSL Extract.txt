@@ -1,0 +1,79 @@
+//////// show what avaliable screens :
+screen -r
+
+//////// go to screen which we Extract the Data in :
+screen -r BslExtract
+
+sudo -u daasuser screen -r BslExtract  sudo -u daasuser screen -d BslExtract
+
+
+/////enter command after edit the days which I want to extract for all feeds
+spark-submit --verbose --conf "spark.ui.enabled=false" --master yarn --driver-memory 8G --executor-memory 8G --num-executors 31 --executor-cores 4 --class com.kamanja.ingest.Hive2HDFS /home/daasuser/DEV/extractHive/dump-hive_2.10-0.0.2-SNAPSHOT.jar -d 20180831 -f all -ef subretaindata_customersubject -t "file:///mnt/beegfs/FlareData/ExportedSubData" -c /home/daasuser/DEV/extractHive/application.conf -l WARN -b 1440 -mwd /mnt/beegfs/extractHive/Email -mhn mailheader -msn sendEmail.sh -msa edge01002 2>&1 | tee /home/daasuser/DEV/extractHive/Extract_Run_$(date +%Y%m%d_%s).txt
+
+//// enter command after edit the days which I want to extract for only one feed
+spark-submit --verbose --conf "spark.ui.enabled=false" --master yarn --driver-memory 8G --executor-memory 8G --num-executors 31 --executor-cores 4 --class com.kamanja.ingest.Hive2HDFS /home/daasuser/DEV/extractHive/dump-hive_2.10-0.0.2-SNAPSHOT.jar -d 20180831 -f subcb_serv_mast_view -ef subretaindata_customersubject -t "file:///mnt/beegfs/FlareData/ExportedSubData" -c /home/daasuser/DEV/extractHive/application.conf -l WARN -b 1440 -mwd /mnt/beegfs/extractHive/Email -mhn mailheader -msn sendEmail.sh -msa edge01002 2>&1 | tee /home/daasuser/DEV/extractHive/Extract_Run_$(date +%Y%m%d_%s).txt
+
+
+==sudo -u daasuser ll -ld /mnt/beegfs/FlareData/ExportedSubData/*/Month201806/20180608
+
+ls -ld /mnt/beegfs/FlareData/ExportedSubData/*/Month201808/20180907
+
+ls -ld /mnt/beegfs/FlareData/ExportedSubData1/*/Month201806/20180608
+
+ls -ld /bsl/FlareData4/ExportedSubData/*/Month201806/20180608
+
+
+ls -ld /home/mtn_user/share/live/
+sudo -u mtn_user ls /home/mtn_user/share/live/
+
+CHECK EXCEPTIONS
+sudo -u daasuser ls -la /home/daasuser/DEV/extractHive |tail
+
+sudo -u daasuser grep "Exception" /home/daasuser/DEV/extractHive/Extract_Run_20180809_1533790998.txt
+
+
+sudo -u daasuser grep "EmailHelper" /home/daasuser/DEV/extractHive/Extract_Run_20180809_1533790998.txt
+
+
+sudo -u daasuser cat /mnt/beegfs/extractHive/Email/History/20180806/20180806_20180809074953305.html
+
+//some Exception in log File :
+when you see this Exception in log File :
+WARN Client : Exception encountered while connecting to the server : javax.security.sasl.SaslException: GSS initiate failed [Caused by GSSException: No valid credentials provided (Mechanism level: Failed to find any Kerberos tgt)]
+first : stop the run by pressed ctrl+c
+seconde : run this command :
+kinit -kt /etc/security/keytabs/daasuser.keytab daasuser@MTN.COM
+third : rerun the extract command
+
+
+//when feed subdmc_dump_all failed we can use the command that exctrat from the pervious day or next day
+spark-submit --verbose --conf "spark.ui.enabled=false" --master yarn --driver-memory 8G --executor-memory 8G --num-executors 31 --executor-cores 4 --class com.kamanja.ingest.Hive2HDFS /home/daasuser/DEV/extractHive/dump-hive_2.10-0.0.2-SNAPSHOT.jar -d 20180711 -f subdmc_dump_all -ef subretaindata_customersubject -t "file:///mnt/beegfs/FlareData/ExportedSubData" -c /home/daasuser/DEV/extractHive/dum_dump_all_previousday.conf -l WARN -b 1440 -mwd /mnt/beegfs/extractHive/Email -mhn mailheader -msn sendEmail.sh -msa edge01002 2>&1 | tee /home/daasuser/DEV/extractHive/Extract_Run_$(date +%Y%m%d_%s).txt
+
+//show the conf file
+ll /home/daasuser/DEV/extractHive/*.confl
+
+hadoop fs -ls /FlareData/output_8/MOBILE_MONEY/tbl_dt=20180804
+//
+spark-submit --verbose --conf "spark.ui.enabled=false" --master yarn --driver-memory 8G --executor-memory 8G --num-executors 31 --executor-cores 4 --class com.kamanja.ingest.Hive2HDFS /home/daasuser/DEV/extractHive/dump-hive_2.10-0.0.2-SNAPSHOT.jar -d 20180804 -f submobile_money -ef subretaindata_customersubject -t "file:///mnt/beegfs/FlareData/ExportedSubData" -c /home/daasuser/DEV/extractHive/application.conf -l WARN -b 1440 -mwd /mnt/beegfs/extractHive/Email -mhn mailheader -msn sendEmail.sh -msa edge01002 2>&1 | tee /home/daasuser/DEV/extractHive/Extract_Run_$(date +%Y%m%d_%s).txt
+
+=========================if feed fails========================
+Note : only subretaindata and subcug_access_fees can be extracted to one file 
+if any other feed exctrat to one file (for example let say submobile_money extracted to 1 file)we need to run the following :
+   make sure we have data for this feed in this date by runing this command :
+   hadoop fs -ls /FlareData/output_8/MOBILE_MONEY/tbl_dt=20180804
+   if the command show result ==> do this steps :
+   set tez.am.resource.memory.mb = 2048;
+   set hive.tez.container.size=40000;
+   set tez.runtime.io.sort.mb = 4096;
+   use flare_8;
+   msck repair table mobile_money;
+   exit;
+   and then rerun extract for the failed feed (submobile_money for example):
+
+
+
+
+
+
+
+

@@ -1,0 +1,65 @@
+//////// go to screen which name BslExtrat
+screen -r BslRun
+
+sudo -u daasuser screen -r BslRun
+
+
+/////enter command after edit the days ehich I want to run and change the type (daily or Weekly)
+bash /mnt/beegfs/Deployment/DEV/scripts/BslScript/BslScript.scala --dataDates 20180827 --startingPoint 1 --endPoint 18 --isIntradayProcessing true --aggr daily --skipSteps 1,2 2>&1 | tee /mnt/beegfs/FlareBslCluster/logs/logs/BslScript/BslRun_$(date +%Y%m%d_%s).txt
+
+/////////////////////////////////////// Weekly
+bash /mnt/beegfs/Deployment/DEV/scripts/BslScript/BslScript.scala --dataDates 20180607 --startingPoint 1 --endPoint 17 --isIntradayProcessing true --aggr weekly --skipSteps 1,2 2>&1 | tee /mnt/beegfs/FlareBslCluster/logs/logs/BslScript/BslRun_$(date +%Y%m%d_%s).txt
+
+///checking logs
+sudo -u daasuser ls -la /mnt/beegfs/FlareBslCluster/logs/logs/BslScript/ |tail
+
+sudo -u daasuser grep "Exception" /mnt/beegfs/FlareBslCluster/logs/logs/BslRun_20180808_1533734998.txt
+
+sudo -u daasuser grep "Sending email" /mnt/beegfs/FlareBslCluster/logs/logs/BslScript/BslRun_20180808_1533734998.txt
+sudo -u daasuser cat /mnt/beegfs/KamanjaBslCluster/BslScript/Email/History/20180806/BslSummary_20180806_summary_20180808140317166.html
+
+sudo -u daasuser cat /mnt/beegfs/KamanjaBslCluster/BslScript/Email/History/20180806/BslValidations_20180806_summary_20180808141959990.html
+
+
+/mnt/beegfs/KamanjaBslCluster/BslScript/Email/History/20180806/header_20180807145505373
+
+
+rerun for evry step Failed :
+if step 3 failed ==> rerun from step 1 to 18
+if step 4 failed ==> rerun from step 1 to 18
+if step 5 failed ==> rerun from step 1 to 18
+if step 6 failed ==> rerun from step 1 to 18
+if step 7 failed ==> rerun from step 1 to 18
+if step 8 failed ==> rerun from step 1 to 18
+if step 9 failed ==> rerun from step 1 to 18
+if step 10 failed ==> rerun from step 1 to 18
+if step 11 failed ==> rerun from step 1 to 18
+if step 12 failed ==> rerun from step 1 to 18
+if step 13 failed ==> rerun from step 1 to 18
+if step 14 failed ==> rerun from step 1 to 18
+if step 15 failed ==> rerun from step 1 to 18
+if step 16 failed ==> rerun from step 1 to 18
+
+if step 17 failed ==> rerun from step 17 to 18
+if step 18 failed ==> rerun from step 18 to 18
+
+kinit -kt /etc/security/keytabs/daasuser.keytab daasuser@MTN.COM
+hadoop fs -ls /FlareData/output_8/CustomerSubject/aggr=daily/tbl_dt=20180824/snapshot=L0001/subsnapshot=001 ?
+
+//STOP BSL
+~/Scripts/ForceStopBslCluster.sh
+~/Scripts/StopBslCluster.sh
+~/Scripts/StatusBslCluster.sh |grep Status
+
+//STOP 
+
+POST BSL
+========================
+//screen
+
+sudo -u daasuser screen -r PostBSLQueries
+
+bash RewriteDailyCustomerSubject_Params.scala --stdate 20180601 --enddate 20180601 2>&1 | tee DailyCustSubOther01_$(date +%Y%m%d_%s).txt
+
+
+

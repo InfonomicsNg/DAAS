@@ -1,0 +1,84 @@
+CHEAT SHEET FOR DPI TO BE RUN DAILY EXACTLY 10AM
+
+
+1) kinit -k -t /etc/security/keytabs/daasuser.keytab daasuser@MTN.COM /*for refreshing the sessions*/ 
+
+
+2) sudo -u daasuser screen -r/-d DPI_BSL -------- run this first to resume or detach the screen.
+
+
+ 
+3) bash DPI_BSL_V2.scala --date 20180902 2>&1 |tee /home/daasuser/samer_scripts/BSL_DPI/log_V2/DPI_BSL_log_$(date +%Y%m%d_%s).txtexit ------ (this is run to  populate for the day before carried out every 10am)
+
+
+
+
+
+-----	4) AFTER THE DPI IS DONE RUN THIS QUERIES ON PRESTO THEN COPY OPTPUT AND PASTE ON BSL google sheets-----------------https://docs.google.com/spreadsheets/d/1-JzNRGyWWayMWZlBe74zQbzx7_82m_fDA1KicJwI970/edit?ts=5b856b02#gid=1664174317
+
+
+5)/opt/presto/bin/presto --server master01004:8099 --catalog hive5 --schema flare_8 --output-format CSV_HEADER --client-tags mlateef ------- (this is to sign into presto through putty)
+
+
+
+
+================================================================= TO GET WHAT WAS POPULATED FROM THE PREVIOUS DAY
+select tbl_dt,count(*), '1st_DPISUBJECTAGGR' feed from flare_8.DPISUBJECTAGGR where  tbl_dt= 20180901  group by tbl_dt
+union all
+select tbl_dt,count(*), '2nd_DPISUBJECTOPCO' feed from flare_8.DPISUBJECTOPCO where tbl_dt= 20180901  group by tbl_dt
+union all
+select tbl_dt,count(*), '3rd_DPISUBJECTPIVOT' feed from flare_8.DPISUBJECTPIVOT where tbl_dt= 20180901   group by tbl_dt
+union all
+select tbl_dt,count(*), '4th_DPISUBJECTUNPACK' feed from flare_8.DPISUBJECTUNPACK where tbl_dt= 20180901   group by tbl_dt
+order by feed;
+=================================================================
+
+==============FOR BSL RUNS 
+
+
+sudo -u daasuser screen -r BslRun  ----- TO RESUME SCREEN /To check for continuos errors and if it reaches a try of 100/360 there is error/
+sudo -u daasuser screen -d BslRun  ----- TO DETACH SCREEN  / in the email generated if the values in the last column generated is not zero there is a problem/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

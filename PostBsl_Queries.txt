@@ -1,0 +1,42 @@
+sudo -u daasuser screen -r PostBSLQueries
+
+==========
+1.	RewriteCustomerSubject
+2.	ValSegTblPrepare
+3.	CustomerSubjectOtherTblPrepare
+
+To check current directory
+pwd
+goto the currect directory before issuing comands
+
+DailyCustSubOthe
+sudo -u daasuser screen -r PostBSLQueries
+
+Note: take record count before and after for days you want to run (RewriteCustomerSubject)
+
+select tbl_dt,count(*) from flare_8.customersubject where tbl_dt in (20180607) and aggr='daily' group by tbl_dt order by tbl_dt;
+
+select tbl_dt, count(*) from flare_8.customersubject where tbl_dt between 20180814 and 20180816 and aggr='daily' group by tbl_dt order by tbl_dt;
+
+===========
+Daily: 
+bash RewriteDailyCustomerSubject_Params.scala --stdate 20180607 --enddate 20180607 2>&1  | tee  DailyCustSubOther01_$(date +%Y%m%d_%s).txt
+
+Weekly: 
+bash RewriteWeeklyCustomerSubject_Params.scala --stdate 20180607 --enddate 20180607 2>&1  | tee  WeeklyCustSub_$(date +%Y%m%d_%s).txt
+
+=============
+vi DailyValSegCalc.scala
+
+bash DailyValSegCalc.scala 2>&1 | tee  PostBslQueriesvel_$(date +%Y%m%d_%s).txt
+
+==============
+Daily: 
+bash DailyCustSubOther01_Params.scala --stdate 20180905 --enddate 20180905 2>&1 | tee DailyCustSubOther01_$(date +%Y%m%d_%s).txt
+
+Weekly: 
+bash WeeklyCustSubOther01_Params.scala --stdate 20180724 --enddate 20180720 2>&1 | tee PostBslQueriesSubOtherWeekly_$(date +%Y%m%d_%s).txt
+
+===============
+
+/opt/presto/bin/presto --server master01004:8099 --catalog hive5 --schema flare_8 --output-format CSV_HEADER --client-tags oolanip
